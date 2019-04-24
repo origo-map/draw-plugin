@@ -8,7 +8,8 @@
     "watch-js": "webpack-dev-server --config ./tasks/webpack.dev.js --mode development",
     "watch-sass": "node-sass -w --include-path scss scss/draw-plugin.scss ../origo/plugins/draw.css",
     "prebuild-sass": "node-sass --include-path scss scss/draw-plugin.scss ../origo/plugins/draw.css",
-    "build": "webpack --config ./tasks/webpack.prod.js"
+    "build": "webpack --config ./tasks/webpack.prod.js && npm run build-sass",
+    "build-sass": "node-sass --include-path scss scss/draw-plugin.scss build/css/style.css"
   },
   "author": "Iman Tahriri",
   "license": "MIT",
