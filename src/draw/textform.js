@@ -1,6 +1,4 @@
-"use strict";
-
-const createElement = function (el, val, attributes) {
+const createElement = function createElement(el, val, attributes) {
   const prefix = `<${el}`;
   const suffix = `</${el}>`;
   const attributeNames = attributes ? Object.getOwnPropertyNames(attributes) : [];
@@ -17,24 +15,26 @@ const createElement = function (el, val, attributes) {
   return element;
 };
 
-const createForm = function (options) {
-  var input = createElement('input', '', {
+const createForm = function createForm(options) {
+  const input = createElement('input', '', {
     id: 'o-draw-input-text',
     type: 'text',
     value: options.value || '',
     placeholder: options.placeHolder
   });
-  var saveButton = createElement('input', '', {
+  const saveButton = createElement('input', '', {
     id: 'o-draw-save-text',
     type: 'button',
     value: 'Ok'
   });
-  var saveWrapper = createElement('div', saveButton, {
+  const saveWrapper = createElement('div', saveButton, {
     cls: 'o-form-save'
   });
-  var content = input + '<br><br>' + saveWrapper;
-  var form = createElement('form', content);
+  const content = `${input}<br><br>${saveWrapper}`;
+  const form = createElement('form', content);
   return form;
-}
+};
 
-export default { createForm }
+export default {
+  createForm
+};

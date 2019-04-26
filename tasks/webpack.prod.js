@@ -1,7 +1,7 @@
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const common = require('./webpack.common.js');
 
 module.exports = merge(common, {
@@ -9,7 +9,9 @@ module.exports = merge(common, {
     nodeEnv: 'production',
     minimize: true
   },
-  performance: { hints: false },
+  performance: {
+    hints: false
+  },
   output: {
     path: `${__dirname}/../build/js`,
     filename: 'draw.min.js',
@@ -20,32 +22,29 @@ module.exports = merge(common, {
   devtool: false,
   mode: 'production',
   module: {
-    rules: [
+    rules: [{
+      test: /\.(sc|c)ss$/,
+      use: [{
+        loader: MiniCssExtractPlugin.loader
+      },
       {
-        test: /\.(sc|c)ss$/,
-        use: [
-          {
-            loader: MiniCssExtractPlugin.loader
-          },       
-          {
-            loader: "css-loader"
-          },
-          {
-            loader: 'postcss-loader',
-            options: {
-              plugins: [
-                require('autoprefixer')({
-                  env: '> 0.5%, last 2 versions, Firefox ESR, not dead, not ie <= 10'
-                })
-              ]
-            }
-          },                    
-          {
-            loader: "sass-loader"     
-          }       
-        ]
-      }       
-    ]
+        loader: 'css-loader'
+      },
+      {
+        loader: 'postcss-loader',
+        options: {
+          plugins: [
+            require('autoprefixer')({
+              env: '> 0.5%, last 2 versions, Firefox ESR, not dead, not ie <= 10'
+            })
+          ]
+        }
+      },
+      {
+        loader: 'sass-loader'
+      }
+      ]
+    }]
   },
   plugins: [
     new UglifyJSPlugin({
@@ -57,7 +56,7 @@ module.exports = merge(common, {
     }),
     new webpack.optimize.AggressiveMergingPlugin(),
     new MiniCssExtractPlugin({
-      filename: "../css/k3-comp.css"    
-    })    
+      filename: '../css/draw.css'
+    })
   ]
 });

@@ -13,22 +13,19 @@ module.exports = merge(common, {
   },
   mode: 'development',
   module: {
-    rules: [
+    rules: [{
+      test: /\.scss$/,
+      use: [{
+        loader: 'style-loader'
+      },
       {
-        test: /\.scss$/,
-        use: [
-          {
-            loader: "style-loader"
-          },            
-          {
-            loader: "css-loader"
-          },          
-          {
-            loader: "sass-loader"     
-          }
-        ]
-      }      
-    ]
+        loader: 'css-loader'
+      },
+      {
+        loader: 'sass-loader'
+      }
+      ]
+    }]
   },
   plugins: [
     new WriteFilePlugin()
