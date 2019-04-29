@@ -1,4 +1,4 @@
-import 'Origo';
+import Origo from 'Origo';
 import drawtoolbar from './draw/drawtoolbar';
 import dispatcher from './draw/drawdispatcher';
 

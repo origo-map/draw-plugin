@@ -1,5 +1,3 @@
-
-
 import $ from 'jquery';
 import dispatcher from './drawdispatcher';
 import drawHandler from './drawhandler';
@@ -16,36 +14,36 @@ let target;
 
 function render() {
   $(`#${target}`).append("<div id='o-draw-toolbar' class='o-control o-toolbar o-padding-horizontal-8 o-rounded-top o-hidden'>" +
-      "<button id='o-draw-point' class='o-btn-3' type='button' name='button'>" +
-        "<svg class='o-icon-fa-map-marker'>" +
-          "<use xlink:href='#fa-map-marker'></use>" +
-        '</svg>' +
-      '</button>' +
-      "<button id='o-draw-polygon' class='o-btn-3' type='button' name='button'>" +
-        "<svg class='o-icon-minicons-square-vector'>" +
-          "<use xlink:href='#minicons-square-vector'></use>" +
-        '</svg>' +
-      '</button>' +
-      "<button id='o-draw-polyline' class='o-btn-3' type='button' name='button'>" +
-        "<svg class='o-icon-minicons-line-vector'>" +
-          "<use xlink:href='#minicons-line-vector'></use>" +
-        '</svg>' +
-      '</button>' +
-      "<button id='o-draw-text' class='o-btn-3' type='button' name='button'>" +
-        "<svg class='o-icon-fa-font'>" +
-          "<use xlink:href='#fa-font'></use>" +
-        '</svg>' +
-      '</button>' +
-      "<button id='o-draw-delete' class='o-btn-3' type='button' name='button'>" +
-        "<svg class='o-icon-fa-trash'>" +
-          "<use xlink:href='#fa-trash'></use>" +
-        '</svg>' +
-      '</button>' +
-      "<button id='o-draw-close' class='o-btn-3' type='button' name='button'>" +
-        "<svg class='o-icon-fa-times'>" +
-          "<use xlink:href='#fa-times'></use>" +
-        '</svg>' +
-      '</button>' +
+    "<button id='o-draw-point' class='o-btn-3' type='button' name='button'>" +
+    "<svg class='o-icon-fa-map-marker'>" +
+    "<use xlink:href='#fa-map-marker'></use>" +
+    '</svg>' +
+    '</button>' +
+    "<button id='o-draw-polygon' class='o-btn-3' type='button' name='button'>" +
+    "<svg class='o-icon-minicons-square-vector'>" +
+    "<use xlink:href='#minicons-square-vector'></use>" +
+    '</svg>' +
+    '</button>' +
+    "<button id='o-draw-polyline' class='o-btn-3' type='button' name='button'>" +
+    "<svg class='o-icon-minicons-line-vector'>" +
+    "<use xlink:href='#minicons-line-vector'></use>" +
+    '</svg>' +
+    '</button>' +
+    "<button id='o-draw-text' class='o-btn-3' type='button' name='button'>" +
+    "<svg class='o-icon-fa-font'>" +
+    "<use xlink:href='#fa-font'></use>" +
+    '</svg>' +
+    '</button>' +
+    "<button id='o-draw-delete' class='o-btn-3' type='button' name='button'>" +
+    "<svg class='o-icon-fa-trash'>" +
+    "<use xlink:href='#fa-trash'></use>" +
+    '</svg>' +
+    '</button>' +
+    "<button id='o-draw-close' class='o-btn-3' type='button' name='button'>" +
+    "<svg class='o-icon-fa-times'>" +
+    "<use xlink:href='#fa-times'></use>" +
+    '</svg>' +
+    '</button>' +
     '</div>');
   $drawPolygon = $('#o-draw-polygon');
   $drawLineString = $('#o-draw-polyline');
@@ -60,7 +58,6 @@ function render() {
     Text: $drawText
   };
 }
-
 
 function bindUIActions() {
   $drawDelete.on('click', (e) => {

@@ -4,7 +4,9 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 const prod = require('./webpack.prod.js');
 
 module.exports = merge(prod, {
-  performance: { hints: 'warning' },
+  performance: {
+    hints: 'warning'
+  },
   plugins: [
     new CompressionPlugin({
       asset: '[path].gz[query]',

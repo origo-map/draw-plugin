@@ -24,7 +24,6 @@ const editsStore = function featureStore() {
   }
 
   function addFeature(type, feature, layerName) {
-    // if (edits.hasOwnProperty(layerName) === false) {
     if (Object.hasOwnProperty.call(edits, layerName) === false) {
       edits[layerName] = createEditsObj();
     }
@@ -36,7 +35,7 @@ const editsStore = function featureStore() {
   function isFinished(layerName) {
     let editTypes;
     let finished = true;
-    // if (edits.hasOwnProperty(layerName)) {
+
     if (Object.hasOwnProperty.call(edits, layerName)) {
       editTypes = Object.getOwnPropertyNames(edits[layerName]);
       editTypes.forEach((editType) => {
@@ -44,19 +43,20 @@ const editsStore = function featureStore() {
           finished = false;
           return finished;
         }
+        return undefined;
       });
       if (finished) {
         delete edits[layerName];
         return finished;
       }
-    } else {
-      return finished;
+      return undefined;
     }
+    return finished;
   }
 
   function removeFeature(type, feature, layerName) {
     let index = 0;
-    // if (edits.hasOwnProperty(layerName)) {
+
     if (Object.hasOwnProperty.call(edits, layerName)) {
       index = edits[layerName][type].indexOf(feature.getId());
       if (index > -1) {

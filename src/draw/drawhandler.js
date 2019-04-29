@@ -1,12 +1,10 @@
-import 'Origo';
+import Origo from 'Origo';
 import $ from 'jquery';
-
 import Select from 'ol/interaction/select';
 import Modify from 'ol/interaction/modify';
 import Draw from 'ol/interaction/draw';
 import DoubleClickZoom from 'ol/interaction/doubleclickzoom';
 import GeoJSON from 'ol/format/geojson';
-
 import dispatcher from './drawdispatcher';
 import modal from './modal';
 import defaultDrawStyle from './drawstyle';
@@ -24,13 +22,14 @@ let placeholderText;
 let viewerId;
 let Style;
 
-
 function disableDoubleClickZoom(evt) {
   const featureType = evt.feature.getGeometry().getType();
+  const interactionsToBeRemoved = [];
+
   if (featureType === 'Point') {
     return;
   }
-  const interactionsToBeRemoved = [];
+
   map.getInteractions().forEach((interaction) => {
     // instanceof cannot be used because ol instance in this plugin is not the same as in Origo.
     // if (interaction instanceof DoubleClickZoom) {
@@ -44,7 +43,9 @@ function disableDoubleClickZoom(evt) {
 }
 
 function onDrawStart(evt) {
-  if (evt.feature.getGeometry().getType() !== 'Point') { disableDoubleClickZoom(evt); }
+  if (evt.feature.getGeometry().getType() !== 'Point') {
+    disableDoubleClickZoom(evt);
+  }
 }
 
 function setActive(drawType) {
@@ -79,7 +80,10 @@ function promptText(feature) {
     value: feature.get(annotationField) || '',
     placeHolder: placeholderText
   });
-  modal.createModal(viewerId, { title: promptTitle, content });
+  modal.createModal(viewerId, {
+    title: promptTitle,
+    content
+  });
   modal.showModal();
   $('#o-draw-save-text').on('click', (e) => {
     const textVal = $('#o-draw-input-text').val();
@@ -135,7 +139,6 @@ function setDraw(drawType) {
   dispatcher.emitChangeDraw(drawType, true);
   draw.on('drawend', onDrawEnd, this);
   draw.on('drawstart', onDrawStart, this);
-  // map.on('dblclick', onDoubleClick, this);
 }
 
 function onDeleteSelected() {
@@ -191,8 +194,12 @@ function getState() {
     const geojson = new GeoJSON();
     const features = source.getFeatures();
     const json = geojson.writeFeatures(features);
-    return { features: json };
+    return {
+      features: json
+    };
   }
+
+  return undefined;
 }
 
 function restoreState(state) {

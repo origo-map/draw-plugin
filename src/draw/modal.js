@@ -43,7 +43,7 @@ const modal = function modal() {
     }
 
     render(title, content, cls);
-    $target = $('#' + modalTarget);
+    $target = $(`#${modalTarget}`);
   }
 
   function showModal() {

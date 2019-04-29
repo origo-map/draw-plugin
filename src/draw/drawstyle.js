@@ -1,5 +1,3 @@
-
-
 const white = [255, 255, 255, 1];
 const blue = [0, 153, 255, 1];
 const blueSelect = [0, 153, 255, 0.1];

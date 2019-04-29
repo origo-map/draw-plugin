@@ -1,8 +1,8 @@
 {
-  "name": "k3-comp",
+  "name": "draw",
   "version": "1.0.0",
   "description": "",
-  "main": "k3-comp.js",
+  "main": "draw.js",
   "scripts": {
     "start": "npm run prebuild-sass | run-p watch-js watch-sass",
     "watch-js": "webpack-dev-server --config ./tasks/webpack.dev.js --mode development",
