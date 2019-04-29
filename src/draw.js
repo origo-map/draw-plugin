@@ -15,6 +15,9 @@ const Draw = function Draw(options = {}) {
 
   return Origo.ui.Component({
     name: 'draw',
+    getState() {
+      return drawtoolbar.getState();
+    },
     onAdd(evt) {
       viewer = evt.target;
       mapMenu = viewer.getControlByName('mapmenu');
@@ -35,6 +38,7 @@ const Draw = function Draw(options = {}) {
       drawtoolbar.init({
         viewer
       });
+      drawtoolbar.restoreState(viewer.getUrlParams());
       this.addComponent(menuItem);
       this.render();
     },

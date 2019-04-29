@@ -1,5 +1,3 @@
-
-
 import 'Origo';
 import $ from 'jquery';
 
@@ -189,7 +187,7 @@ function removeInteractions() {
 
 function getState() {
   if (drawLayer) {
-    const source = drawLayer.getSource();
+    const source = drawLayer.getFeatureStore();
     const geojson = new GeoJSON();
     const features = source.getFeatures();
     const json = geojson.writeFeatures(features);
@@ -200,7 +198,7 @@ function getState() {
 function restoreState(state) {
   // TODO: Sanity/data check
   if (state.features && state.features.length > 0) {
-    const source = drawLayer.getSource();
+    const source = drawLayer.getFeatureStore();
     source.addFeatures(state.features);
     source.getFeatures().forEach((feature) => {
       if (feature.get(annotationField)) {

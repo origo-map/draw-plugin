@@ -142,8 +142,10 @@ function getState() {
   return drawHandler.getState();
 }
 
-function restoreState(state) {
-  return drawHandler.restoreState(state);
+function restoreState(params) {
+  if (params && params.controls && params.controls.draw) {
+    drawHandler.restoreState(params.controls.draw);
+  }
 }
 
 function init(optOptions) {
