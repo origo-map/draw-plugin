@@ -20,7 +20,7 @@ Requires Origo 2.0.1 or later
     <div id="app-wrapper">
     </div>
     <script src="js/origo.js"></script>
-    <script src="plugins/draw.js"></script>
+    <script src="plugins/draw.min.js"></script>
 
     <script type="text/javascript">
     	//Init origo
