@@ -1,6 +1,6 @@
 import Origo from 'Origo';
 import $ from 'jquery';
-import GeoJSON from 'ol/format/geojson';
+import GeoJSON from 'ol/format/GeoJSON';
 import dispatcher from './drawdispatcher';
 import modal from './modal';
 import defaultDrawStyle from './drawstyle';
