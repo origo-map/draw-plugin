@@ -1,10 +1,6 @@
 import Origo from 'Origo';
 import $ from 'jquery';
-import Select from 'ol/interaction/select';
-import Modify from 'ol/interaction/modify';
-import Draw from 'ol/interaction/draw';
-import DoubleClickZoom from 'ol/interaction/doubleclickzoom';
-import GeoJSON from 'ol/format/geojson';
+import GeoJSON from 'ol/format/GeoJSON';
 import dispatcher from './drawdispatcher';
 import modal from './modal';
 import defaultDrawStyle from './drawstyle';
@@ -32,7 +28,6 @@ function disableDoubleClickZoom(evt) {
 
   map.getInteractions().forEach((interaction) => {
     // instanceof cannot be used because ol instance in this plugin is not the same as in Origo.
-    // if (interaction instanceof DoubleClickZoom) {
     if (interaction.constructor.name === 'DoubleClickZoom') {
       interactionsToBeRemoved.push(interaction);
     }
@@ -98,13 +93,12 @@ function addDoubleClickZoomInteraction() {
   const allDoubleClickZoomInteractions = [];
   map.getInteractions().forEach((interaction) => {
     // instanceof cannot be used because ol instance in this plugin is not the same as in Origo.
-    // if (interaction instanceof DoubleClickZoom) {
     if (interaction.constructor.name === 'DoubleClickZoom') {
       allDoubleClickZoomInteractions.push(interaction);
     }
   });
   if (allDoubleClickZoomInteractions.length < 1) {
-    map.addInteraction(new DoubleClickZoom());
+    map.addInteraction(new Origo.ol.interaction.DoubleClickZoom());
   }
 }
 
@@ -131,7 +125,7 @@ function setDraw(drawType) {
   if (activeTool === 'Text') {
     geometryType = 'Point';
   }
-  draw = new Draw({
+  draw = new Origo.ol.interaction.Draw({
     source: drawLayer.getFeatureStore(),
     type: geometryType
   });
@@ -264,11 +258,11 @@ const init = function init(optOptions) {
   drawLayer.setStyle(drawStyle);
   activeTool = undefined;
 
-  select = new Select({
+  select = new Origo.ol.interaction.Select({
     layers: [drawLayer.getFeatureLayer()],
     style: selectStyle
   });
-  modify = new Modify({
+  modify = new Origo.ol.interaction.Modify({
     features: select.getFeatures()
   });
   map.addInteraction(select);
