@@ -60,11 +60,17 @@ function setActive(drawType) {
 }
 
 function onTextEnd(feature, textVal) {
-  const text = defaultDrawStyle.text;
-  text.text.text = textVal;
-  const textStyle = Style.createStyleRule([text]);
-  feature.setStyle(textStyle);
-  feature.set(annotationField, textVal);
+  //Remove the feature if no text is set
+  if(textVal === ""){
+    drawLayer.getFeatureStore().removeFeature(feature);
+  }
+  else{ 
+    const text = defaultDrawStyle.text;
+    text.text.text = textVal;
+    const textStyle = Style.createStyleRule([text]);
+    feature.setStyle(textStyle);
+    feature.set(annotationField, textVal);
+  }
   setActive();
   activeTool = undefined;
   dispatcher.emitChangeDraw('Text', false);
@@ -80,12 +86,24 @@ function promptText(feature) {
     content
   });
   modal.showModal();
+  const editableText = $('#o-draw-input-text').val();
+  document.getElementById('o-draw-input-text').focus();
+  $('#o-draw-input-text').on('keyup', (e) => {
+    if (e.keyCode == 13) {
+      $('#o-draw-save-text').trigger('click');
+    }
+  });
   $('#o-draw-save-text').on('click', (e) => {
     const textVal = $('#o-draw-input-text').val();
     modal.closeModal();
     $('#o-draw-save-text').blur();
     e.preventDefault();
     onTextEnd(feature, textVal);
+  });
+  $('.o-modal-screen, .o-close-button').on('click', e => {
+    $('#o-draw-save-text').blur();
+    e.preventDefault();
+    onTextEnd(feature, editableText);
   });
 }
 
@@ -127,7 +145,8 @@ function setDraw(drawType) {
   }
   draw = new Origo.ol.interaction.Draw({
     source: drawLayer.getFeatureStore(),
-    type: geometryType
+    type: geometryType,
+    freehand : $("#toggle-freemode").is(':checked')
   });
   map.addInteraction(draw);
   dispatcher.emitChangeDraw(drawType, true);
@@ -240,6 +259,8 @@ function runPolyFill() {
   }
 }
 
+const getActiveTool = () => activeTool
+
 const init = function init(optOptions) {
   runPolyFill();
 
@@ -275,5 +296,6 @@ const init = function init(optOptions) {
 export default {
   init,
   getState,
-  restoreState
+  restoreState,
+  getActiveTool
 };

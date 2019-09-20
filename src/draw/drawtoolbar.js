@@ -11,35 +11,48 @@ let $drawDelete;
 let $drawClose;
 let drawTools;
 let target;
+let viewer;
+let freemodeToggle = `
+  <label title='On/off för frihandläge (Linje och polygon)' class="switch">
+      <input id='toggle-freemode' type="checkbox" style="opacity:0;">
+      <span class="slider round">
+          <span class="freehand-icon">
+              <svg class="o-icon-pencil">
+                  <use xlink:href="#fa-pencil"></use>
+              </svg>
+          </span>
+      </span>
+  </label>`;
 
 function render() {
-  $(`#${target}`).append("<div id='o-draw-toolbar' class='o-control o-toolbar o-padding-horizontal-8 o-rounded-top o-hidden'>" +
-    "<button id='o-draw-point' class='o-btn-3' type='button' name='button'>" +
+  $(`#${target}`).append("<div id='o-draw-toolbar' class='o-draw-toolbar o-control o-toolbar o-padding-horizontal-8 o-rounded-top draw-toolbar-hide'>" +
+    `${freemodeToggle}`+
+    "<button title='Punkt' id='o-draw-point' class='o-btn-3' type='button' name='button'>" +
     "<svg class='o-icon-fa-map-marker'>" +
     "<use xlink:href='#fa-map-marker'></use>" +
     '</svg>' +
     '</button>' +
-    "<button id='o-draw-polygon' class='o-btn-3' type='button' name='button'>" +
+    "<button title='Polygon' id='o-draw-polygon' class='o-btn-3' type='button' name='button'>" +
     "<svg class='o-icon-minicons-square-vector'>" +
     "<use xlink:href='#minicons-square-vector'></use>" +
     '</svg>' +
     '</button>' +
-    "<button id='o-draw-polyline' class='o-btn-3' type='button' name='button'>" +
+    "<button title='Linje' id='o-draw-polyline' class='o-btn-3' type='button' name='button'>" +
     "<svg class='o-icon-minicons-line-vector'>" +
     "<use xlink:href='#minicons-line-vector'></use>" +
     '</svg>' +
     '</button>' +
-    "<button id='o-draw-text' class='o-btn-3' type='button' name='button'>" +
+    "<button title='Text' id='o-draw-text' class='o-btn-3' type='button' name='button'>" +
     "<svg class='o-icon-fa-font'>" +
     "<use xlink:href='#fa-font'></use>" +
     '</svg>' +
     '</button>' +
-    "<button id='o-draw-delete' class='o-btn-3' type='button' name='button'>" +
+    "<button title='Ta bort' id='o-draw-delete' class='o-btn-3' type='button' name='button'>" +
     "<svg class='o-icon-fa-trash'>" +
     "<use xlink:href='#fa-trash'></use>" +
     '</svg>' +
     '</button>' +
-    "<button id='o-draw-close' class='o-btn-3' type='button' name='button'>" +
+    "<button title='Stäng' id='o-draw-close' class='o-btn-3' type='button' name='button'>" +
     "<svg class='o-icon-fa-times'>" +
     "<use xlink:href='#fa-times'></use>" +
     '</svg>' +
@@ -60,6 +73,12 @@ function render() {
 }
 
 function bindUIActions() {
+  $('#toggle-freemode').on("click", (e) => {
+    //deactivate current tool and reactivate it again with freemode
+    let active = drawHandler.getActiveTool()
+    dispatcher.emitToggleDraw(active);
+    dispatcher.emitToggleDraw(active);
+  });
   $drawDelete.on('click', (e) => {
     dispatcher.emitToggleDraw('delete');
     $drawDelete.blur();
@@ -100,9 +119,11 @@ function bindUIActions() {
 
 function setActive(state) {
   if (state === true) {
-    $('#o-draw-toolbar').removeClass('o-hidden');
+    viewer.dispatch('toggleClickInteraction', {name: 'featureinfo',active:false});
+    $('#o-draw-toolbar').removeClass('draw-toolbar-hide');
   } else {
-    $('#o-draw-toolbar').addClass('o-hidden');
+    viewer.dispatch('toggleClickInteraction', {name: 'featureinfo',active:true});
+    $('#o-draw-toolbar').addClass('draw-toolbar-hide');
   }
 }
 
@@ -147,7 +168,7 @@ function restoreState(params) {
 
 function init(optOptions) {
   const options = optOptions || {};
-  const viewer = options.viewer;
+  viewer = options.viewer;
   target = `${viewer.getMain().getId()}`;
   drawHandler.init(options);
   render();
