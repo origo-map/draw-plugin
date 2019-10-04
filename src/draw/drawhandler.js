@@ -60,11 +60,10 @@ function setActive(drawType) {
 }
 
 function onTextEnd(feature, textVal) {
-  //Remove the feature if no text is set
-  if(textVal === ""){
+  // Remove the feature if no text is set
+  if (textVal === '') {
     drawLayer.getFeatureStore().removeFeature(feature);
-  }
-  else{ 
+  } else {
     const text = defaultDrawStyle.text;
     text.text.text = textVal;
     const textStyle = Style.createStyleRule([text]);
@@ -89,7 +88,7 @@ function promptText(feature) {
   const editableText = $('#o-draw-input-text').val();
   document.getElementById('o-draw-input-text').focus();
   $('#o-draw-input-text').on('keyup', (e) => {
-    if (e.keyCode == 13) {
+    if (e.keyCode === 13) {
       $('#o-draw-save-text').trigger('click');
     }
   });
@@ -100,7 +99,7 @@ function promptText(feature) {
     e.preventDefault();
     onTextEnd(feature, textVal);
   });
-  $('.o-modal-screen, .o-close-button').on('click', e => {
+  $('.o-modal-screen, .o-close-button').on('click', (e) => {
     $('#o-draw-save-text').blur();
     e.preventDefault();
     onTextEnd(feature, editableText);
@@ -146,7 +145,7 @@ function setDraw(drawType) {
   draw = new Origo.ol.interaction.Draw({
     source: drawLayer.getFeatureStore(),
     type: geometryType,
-    freehand : $("#toggle-freemode").is(':checked')
+    freehand: $('#toggle-freemode').is(':checked')
   });
   map.addInteraction(draw);
   dispatcher.emitChangeDraw(drawType, true);
@@ -259,7 +258,7 @@ function runPolyFill() {
   }
 }
 
-const getActiveTool = () => activeTool
+const getActiveTool = () => activeTool;
 
 const init = function init(optOptions) {
   runPolyFill();

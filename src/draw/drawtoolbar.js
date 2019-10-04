@@ -12,7 +12,7 @@ let $drawClose;
 let drawTools;
 let target;
 let viewer;
-let freemodeToggle = `
+const freemodeToggle = `
   <label title='On/off för frihandläge (Linje och polygon)' class="switch">
       <input id='toggle-freemode' type="checkbox" style="opacity:0;">
       <span class="slider round">
@@ -26,7 +26,7 @@ let freemodeToggle = `
 
 function render() {
   $(`#${target}`).append("<div id='o-draw-toolbar' class='o-draw-toolbar o-control o-toolbar o-padding-horizontal-8 o-rounded-top draw-toolbar-hide'>" +
-    `${freemodeToggle}`+
+    `${freemodeToggle}` +
     "<button title='Punkt' id='o-draw-point' class='o-btn-3' type='button' name='button'>" +
     "<svg class='o-icon-fa-map-marker'>" +
     "<use xlink:href='#fa-map-marker'></use>" +
@@ -73,9 +73,9 @@ function render() {
 }
 
 function bindUIActions() {
-  $('#toggle-freemode').on("click", (e) => {
-    //deactivate current tool and reactivate it again with freemode
-    let active = drawHandler.getActiveTool()
+  $('#toggle-freemode').on('click', () => {
+    // deactivate current tool and reactivate it again with freemode
+    const active = drawHandler.getActiveTool();
     dispatcher.emitToggleDraw(active);
     dispatcher.emitToggleDraw(active);
   });
@@ -119,10 +119,10 @@ function bindUIActions() {
 
 function setActive(state) {
   if (state === true) {
-    viewer.dispatch('toggleClickInteraction', {name: 'featureinfo',active:false});
+    viewer.dispatch('toggleClickInteraction', { name: 'featureinfo', active: false });
     $('#o-draw-toolbar').removeClass('draw-toolbar-hide');
   } else {
-    viewer.dispatch('toggleClickInteraction', {name: 'featureinfo',active:true});
+    viewer.dispatch('toggleClickInteraction', { name: 'featureinfo', active: true });
     $('#o-draw-toolbar').addClass('draw-toolbar-hide');
   }
 }
