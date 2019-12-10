@@ -1,6 +1,8 @@
 import $ from 'jquery';
 import dispatcher from './drawdispatcher';
+import drawTemplate from './drawtemplate';
 import drawHandler from './drawhandler';
+import drawExtraTools from './drawtools';
 
 const activeClass = 'o-control-active';
 let $drawPolygon;
@@ -12,52 +14,9 @@ let $drawClose;
 let drawTools;
 let target;
 let viewer;
-const freemodeToggle = `
-  <label title='On/off för frihandläge (Linje och polygon)' class="switch">
-      <input id='toggle-freemode' type="checkbox" style="opacity:0;">
-      <span class="slider round">
-          <span class="freehand-icon">
-              <svg class="o-icon-pencil">
-                  <use xlink:href="#fa-pencil"></use>
-              </svg>
-          </span>
-      </span>
-  </label>`;
 
 function render() {
-  $(`#${target}`).append("<div id='o-draw-toolbar' class='o-draw-toolbar o-control o-toolbar o-padding-horizontal-8 o-rounded-top draw-toolbar-hide'>" +
-    `${freemodeToggle}` +
-    "<button title='Punkt' id='o-draw-point' class='o-btn-3' type='button' name='button'>" +
-    "<svg class='o-icon-fa-map-marker'>" +
-    "<use xlink:href='#fa-map-marker'></use>" +
-    '</svg>' +
-    '</button>' +
-    "<button title='Polygon' id='o-draw-polygon' class='o-btn-3' type='button' name='button'>" +
-    "<svg class='o-icon-minicons-square-vector'>" +
-    "<use xlink:href='#minicons-square-vector'></use>" +
-    '</svg>' +
-    '</button>' +
-    "<button title='Linje' id='o-draw-polyline' class='o-btn-3' type='button' name='button'>" +
-    "<svg class='o-icon-minicons-line-vector'>" +
-    "<use xlink:href='#minicons-line-vector'></use>" +
-    '</svg>' +
-    '</button>' +
-    "<button title='Text' id='o-draw-text' class='o-btn-3' type='button' name='button'>" +
-    "<svg class='o-icon-fa-font'>" +
-    "<use xlink:href='#fa-font'></use>" +
-    '</svg>' +
-    '</button>' +
-    "<button title='Ta bort' id='o-draw-delete' class='o-btn-3' type='button' name='button'>" +
-    "<svg class='o-icon-fa-trash'>" +
-    "<use xlink:href='#fa-trash'></use>" +
-    '</svg>' +
-    '</button>' +
-    "<button title='Stäng' id='o-draw-close' class='o-btn-3' type='button' name='button'>" +
-    "<svg class='o-icon-fa-times'>" +
-    "<use xlink:href='#fa-times'></use>" +
-    '</svg>' +
-    '</button>' +
-    '</div>');
+  $(`#${target}`).append(drawTemplate);
   $drawPolygon = $('#o-draw-polygon');
   $drawLineString = $('#o-draw-polyline');
   $drawPoint = $('#o-draw-point');
@@ -66,26 +25,20 @@ function render() {
   $drawClose = $('#o-draw-close');
   drawTools = {
     Point: $drawPoint,
-    LineString: $drawLineString,
+    Linje: $drawLineString,
     Polygon: $drawPolygon,
     Text: $drawText
   };
 }
 
 function bindUIActions() {
-  $('#toggle-freemode').on('click', () => {
-    // deactivate current tool and reactivate it again with freemode
-    const active = drawHandler.getActiveTool();
-    dispatcher.emitToggleDraw(active);
-    dispatcher.emitToggleDraw(active);
-  });
   $drawDelete.on('click', (e) => {
     dispatcher.emitToggleDraw('delete');
     $drawDelete.blur();
     e.preventDefault();
   });
   $drawPolygon.on('click', (e) => {
-    dispatcher.emitToggleDraw('Polygon');
+    dispatcher.emitToggleDraw('Polygon', true);
     $drawPolygon.blur();
     e.preventDefault();
   });
@@ -120,15 +73,14 @@ function bindUIActions() {
 function setActive(state) {
   if (state === true) {
     viewer.dispatch('toggleClickInteraction', { name: 'featureinfo', active: false });
-    $('#o-draw-toolbar').removeClass('draw-toolbar-hide');
+    $('#o-draw-toolbar').removeClass('o-hidden');
   } else {
     viewer.dispatch('toggleClickInteraction', { name: 'featureinfo', active: true });
-    $('#o-draw-toolbar').addClass('draw-toolbar-hide');
+    $('#o-draw-toolbar').addClass('o-hidden');
   }
 }
 
 function onEnableInteraction(e) {
-  // e.stopPropagation();
   if (e.interaction === 'draw') {
     setActive(true);
   } else {
@@ -168,10 +120,12 @@ function restoreState(params) {
 
 function init(optOptions) {
   const options = optOptions || {};
+  const extraTools = options.options.drawTools;
   viewer = options.viewer;
-  target = `${viewer.getMain().getId()}`;
+  target = 'o-tools-bottom';
   drawHandler.init(options);
   render();
+  drawExtraTools(extraTools, viewer);
   $(document).on('enableInteraction', onEnableInteraction);
   $(document).on('changeDraw', changeDrawState);
   bindUIActions();

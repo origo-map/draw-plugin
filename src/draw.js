@@ -4,7 +4,8 @@ import dispatcher from './draw/drawdispatcher';
 
 const Draw = function Draw(options = {}) {
   const {
-    buttonText = 'Rita'
+    buttonText = 'Rita',
+    drawTools
   } = options;
 
   const icon = '#fa-pencil';
@@ -36,7 +37,8 @@ const Draw = function Draw(options = {}) {
         title: buttonText
       });
       drawtoolbar.init({
-        viewer
+        viewer,
+        options
       });
       drawtoolbar.restoreState(viewer.getUrlParams());
       this.addComponent(menuItem);
