@@ -1,5 +1,7 @@
 # Draw plugin
 
+**PLEASE NOTE THAT THIS IS A BETA VERSION**
+
 Draw tool plugin for Origo.
 
 Requires Origo 2.0.1 or later
