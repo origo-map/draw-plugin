@@ -28,7 +28,6 @@ function disableDoubleClickZoom(evt) {
   }
 
   map.getInteractions().forEach((interaction) => {
-    // instanceof cannot be used because ol instance in this plugin is not the same as in Origo.
     if (interaction instanceof Origo.ol.interaction.DoubleClickZoom) {
       interactionsToBeRemoved.push(interaction);
     }
