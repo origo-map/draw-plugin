@@ -1,12 +1,13 @@
 import Origo from 'Origo';
 import $ from 'jquery';
-import GeoJSON from 'ol/format/GeoJSON';
 import dispatcher from './drawdispatcher';
 import modal from './modal';
 import defaultDrawStyle from './drawstyle';
 import textForm from './textform';
+import shapes from './shapes';
 
 let map;
+let drawSource;
 let drawLayer;
 let draw;
 let activeTool;
@@ -27,8 +28,7 @@ function disableDoubleClickZoom(evt) {
   }
 
   map.getInteractions().forEach((interaction) => {
-    // instanceof cannot be used because ol instance in this plugin is not the same as in Origo.
-    if (interaction.constructor.name === 'DoubleClickZoom') {
+    if (interaction instanceof Origo.ol.interaction.DoubleClickZoom) {
       interactionsToBeRemoved.push(interaction);
     }
   });
@@ -109,8 +109,7 @@ function promptText(feature) {
 function addDoubleClickZoomInteraction() {
   const allDoubleClickZoomInteractions = [];
   map.getInteractions().forEach((interaction) => {
-    // instanceof cannot be used because ol instance in this plugin is not the same as in Origo.
-    if (interaction.constructor.name === 'DoubleClickZoom') {
+    if (interaction instanceof Origo.ol.interaction.DoubleClickZoom) {
       allDoubleClickZoomInteractions.push(interaction);
     }
   });
@@ -136,19 +135,28 @@ function onDrawEnd(evt) {
   enableDoubleClickZoom(evt);
 }
 
-function setDraw(drawType) {
-  let geometryType = drawType;
-  activeTool = drawType;
+function setDraw(tool, drawType) {
+  let geometryType = tool;
+  drawSource = drawLayer.getFeatureStore();
+  activeTool = tool;
+
   if (activeTool === 'Text') {
     geometryType = 'Point';
   }
-  draw = new Origo.ol.interaction.Draw({
-    source: drawLayer.getFeatureStore(),
-    type: geometryType,
-    freehand: $('#toggle-freemode').is(':checked')
-  });
+
+  const drawOptions = {
+    source: drawSource,
+    type: geometryType
+  };
+
+  if (drawType) {
+    $.extend(drawOptions, shapes(drawType));
+  }
+
+  map.removeInteraction(draw);
+  draw = new Origo.ol.interaction.Draw(drawOptions);
   map.addInteraction(draw);
-  dispatcher.emitChangeDraw(drawType, true);
+  dispatcher.emitChangeDraw(tool, true);
   draw.on('drawend', onDrawEnd, this);
   draw.on('drawstart', onDrawStart, this);
 }
@@ -175,13 +183,17 @@ function onSelectAdd(e) {
   }
 }
 
-function cancelDraw() {
+function cancelDraw(tool) {
   setActive();
   activeTool = undefined;
-  dispatcher.emitChangeDraw('cancel', false);
+  dispatcher.emitChangeDraw(tool, false);
 }
 
-/*
+function onChangeDrawType(e) {
+  activeTool = undefined;
+  dispatcher.emitToggleDraw(e.tool, { drawType: e.drawType });
+}
+
 function isActive() {
   if (modify === undefined || select === undefined) {
     return false;
@@ -198,12 +210,12 @@ function removeInteractions() {
     select = undefined;
     draw = undefined;
   }
-} */
+}
 
 function getState() {
   if (drawLayer) {
     const source = drawLayer.getFeatureStore();
-    const geojson = new GeoJSON();
+    const geojson = new Origo.ol.format.GeoJSON();
     const features = source.getFeatures();
     const json = geojson.writeFeatures(features);
     return {
@@ -232,16 +244,41 @@ function toggleDraw(e) {
   if (e.tool === 'delete') {
     onDeleteSelected();
   } else if (e.tool === 'cancel') {
-    // removeInteractions();
-    cancelDraw();
+    cancelDraw(e.tool);
+    removeInteractions();
   } else if (e.tool === activeTool) {
-    cancelDraw();
+    cancelDraw(e.tool);
   } else if (e.tool === 'Polygon' || e.tool === 'LineString' || e.tool === 'Point' || e.tool === 'Text') {
     if (activeTool) {
-      cancelDraw();
+      cancelDraw(e.tool);
     }
     setActive('draw');
-    setDraw(e.tool);
+    setDraw(e.tool, e.drawType);
+  }
+}
+
+function onEnableInteraction(e) {
+  if (e.interaction === 'draw') {
+    const drawStyle = Style.createStyleRule(defaultDrawStyle.draw);
+    const selectStyle = Style.createStyleRule(defaultDrawStyle.select);
+
+    if (drawLayer === undefined) {
+      drawLayer = Origo.featurelayer(null, map);
+      drawLayer.setStyle(drawStyle);
+    }
+
+    select = new Origo.ol.interaction.Select({
+      layers: [drawLayer.getFeatureLayer()],
+      style: selectStyle
+    });
+    modify = new Origo.ol.interaction.Modify({
+      features: select.getFeatures()
+    });
+
+    map.addInteraction(select);
+    map.addInteraction(modify);
+    select.getFeatures().on('add', onSelectAdd, this);
+    setActive();
   }
 }
 
@@ -266,30 +303,17 @@ const init = function init(optOptions) {
   const options = optOptions || {};
   Style = Origo.Style;
 
-  const drawStyle = Style.createStyleRule(defaultDrawStyle.draw);
-  const selectStyle = Style.createStyleRule(defaultDrawStyle.select);
   map = options.viewer.getMap();
   viewerId = options.viewer.getMain().getId();
 
   annotationField = options.annonation || 'annonation';
   promptTitle = options.promptTitle || 'Ange text';
   placeholderText = options.placeholderText || 'Text som visas i kartan';
-  drawLayer = Origo.featurelayer(null, map);
-  drawLayer.setStyle(drawStyle);
   activeTool = undefined;
 
-  select = new Origo.ol.interaction.Select({
-    layers: [drawLayer.getFeatureLayer()],
-    style: selectStyle
-  });
-  modify = new Origo.ol.interaction.Modify({
-    features: select.getFeatures()
-  });
-  map.addInteraction(select);
-  map.addInteraction(modify);
-  select.getFeatures().on('add', onSelectAdd, this);
-  setActive();
   $(document).on('toggleDraw', toggleDraw);
+  $(document).on('editorDrawTypes', onChangeDrawType);
+  $(document).on('enableInteraction', onEnableInteraction);
 };
 
 export default {

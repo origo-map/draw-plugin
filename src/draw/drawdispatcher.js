@@ -32,9 +32,18 @@ function emitDisableDrawInteraction() {
   });
 }
 
+function emitChangeEditorDrawType(tool, drawType) {
+  $.event.trigger({
+    type: 'editorDrawTypes',
+    tool,
+    drawType
+  });
+}
+
 export default {
   emitToggleDraw,
   emitChangeDraw,
   emitEnableDrawInteraction,
-  emitDisableDrawInteraction
+  emitDisableDrawInteraction,
+  emitChangeEditorDrawType
 };
