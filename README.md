@@ -4,7 +4,7 @@
 
 Draw tool plugin for Origo.
 
-Requires Origo 2.0.1 or later
+Requires a version of Origo master not older than 2020-02-13.
 
 #### Example usage of Draw plugin
 
@@ -25,13 +25,17 @@ Requires Origo 2.0.1 or later
     <script src="plugins/draw.min.js"></script>
 
     <script type="text/javascript">
-    	//Init origo
-    	var origo = Origo('index.json');
-    	origo.on('load', function (viewer) {
-    		var draw = Draw({
-    			buttonText: 'Rita'
-    		});
-    		viewer.addComponent(draw);
-    	});
+      //Init origo
+      var origo = Origo('index.json');
+      origo.on('load', function (viewer) {
+        var draw = Draw({
+          buttonText: 'Rita',
+          drawTools: {
+            "Polygon": ["freehand", "box"],
+            "LineString": ["freehand"]
+          }
+        });
+        viewer.addComponent(draw);
+      });
     </script>
 ```
