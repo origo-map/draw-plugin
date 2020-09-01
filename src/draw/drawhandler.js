@@ -229,6 +229,9 @@ function getState() {
 function restoreState(state) {
   // TODO: Sanity/data check
   if (state.features && state.features.length > 0) {
+    if (drawLayer === undefined) {
+      drawLayer = Origo.featurelayer(null, map);
+    }
     const source = drawLayer.getFeatureStore();
     source.addFeatures(state.features);
     source.getFeatures().forEach((feature) => {
