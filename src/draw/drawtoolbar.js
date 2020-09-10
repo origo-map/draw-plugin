@@ -9,6 +9,7 @@ let $drawPolygon;
 let $drawLineString;
 let $drawPoint;
 let $drawText;
+let $drawStyle;
 let $drawDelete;
 let $drawClose;
 let drawTools;
@@ -21,6 +22,7 @@ function render() {
   $drawLineString = $('#o-draw-polyline');
   $drawPoint = $('#o-draw-point');
   $drawText = $('#o-draw-text');
+  $drawStyle = $('#o-draw-style');
   $drawDelete = $('#o-draw-delete');
   $drawClose = $('#o-draw-close');
   drawTools = {
@@ -57,7 +59,15 @@ function bindUIActions() {
     $drawText.blur();
     e.preventDefault();
   });
+  $drawStyle.on('click', (e) => {
+    const stylewindowEl = document.getElementById('o-draw-stylewindow');
+    stylewindowEl.classList.toggle('hidden');
+    $drawStyle.blur();
+    e.preventDefault();
+  });
   $drawClose.on('click', (e) => {
+    const stylewindowEl = document.getElementById('o-draw-stylewindow');
+    stylewindowEl.classList.add('hidden');
     dispatcher.emitDisableDrawInteraction();
     $drawClose.blur();
     e.stopPropagation();
