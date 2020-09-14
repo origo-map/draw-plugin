@@ -2,35 +2,30 @@ import Origo from 'Origo';
 import styleTemplate from './styletemplate';
 import drawHandler from './drawhandler';
 
-let fillColor;
-let fillColorArr;
-let fillOpacity;
-let strokeColor;
-let strokeColorArr;
-let strokeOpacity;
-let strokeWidth;
-let strokeType;
-let pointSize;
-let pointType;
-let textSize;
-let textString;
 let annotationField;
-const textFont = '"Helvetica Neue", Helvetica, Arial, sans-serif';
+let swStyle = {};
+const swDefaults = {
+  fillColor: 'rgb(0,153,255)',
+  fillOpacity: 0.75,
+  strokeColor: 'rgb(0,153,255)',
+  strokeOpacity: 1,
+  strokeWidth: 2,
+  strokeType: 'line',
+  pointSize: 10,
+  pointType: 'circle',
+  textSize: 20,
+  textString: 'Text',
+  textFont: '"Helvetica Neue", Helvetica, Arial, sans-serif'
+};
 
-function getStrokeType(lineDash) {
-  if (!lineDash) {
-    strokeType = 'line';
-  } else if (lineDash.length === 2 && lineDash[0] === lineDash[1]) {
-    strokeType = 'dash';
-  } else if (lineDash.length === 2 && lineDash[0] < lineDash[1]) {
-    strokeType = 'point';
-  } else if (lineDash.length === 4) {
-    strokeType = 'dash-point';
-  } else {
-    strokeType = 'line';
-  }
-  return strokeType;
+function rgbToArray(colorString, opacity = 1) {
+  const colorArray = colorString.replace(/[^\d,.]/g, '').split(',');
+  colorArray[3] = opacity;
+  return colorArray;
 }
+
+swDefaults.fillColorArr = rgbToArray(swDefaults.fillColor, swDefaults.fillOpacity);
+swDefaults.strokeColorArr = rgbToArray(swDefaults.strokeColor, swDefaults.strokeOpacity);
 
 function createRegularShape(type, size, fill, stroke) {
   let style;
@@ -121,20 +116,18 @@ function createRegularShape(type, size, fill, stroke) {
   return style;
 }
 
-function rgbToArray(colorString, opacity = 1) {
-  const colorArray = colorString.replace(/[^\d,.]/g, '').split(',');
-  colorArray[3] = opacity;
-  return colorArray;
-}
-
 function setFillColor(color) {
-  fillColor = color;
-  fillColorArr = rgbToArray(fillColor, fillOpacity);
+  swStyle.fillColor = color;
+  swStyle.fillColorArr = rgbToArray(swStyle.fillColor, swStyle.fillOpacity);
 }
 
 function setStrokeColor(color) {
-  strokeColor = color;
-  strokeColorArr = rgbToArray(strokeColor, strokeOpacity);
+  swStyle.strokeColor = color;
+  swStyle.strokeColorArr = rgbToArray(swStyle.strokeColor, swStyle.strokeOpacity);
+}
+
+function getStyleObject() {
+  return Object.assign({}, swStyle);
 }
 
 function restoreStylewindow() {
@@ -146,6 +139,7 @@ function restoreStylewindow() {
 
 function updateStylewindow(feature) {
   let geometryType = feature.getGeometry().getType();
+  swStyle = Object.assign(swStyle, feature.get('style'));
   if (feature.get(annotationField)) {
     geometryType = 'TextPoint';
   }
@@ -172,89 +166,66 @@ function updateStylewindow(feature) {
     default:
       break;
   }
-  const featureStyle = feature.getStyle();
-  let featureStroke = featureStyle[0].getStroke();
-  let featureFill = featureStyle[0].getFill();
-  const featureText = featureStyle[0].getText();
-  if (featureText) {
-    featureFill = featureText.getFill();
-    featureStroke = featureText.getStroke();
-    const featureTextString = featureText.getText();
-    const featureTextFont = featureText.getFont();
-    const featureTextSize = featureTextFont.split('px')[0];
-    document.getElementById('o-draw-style-textSizeSlider').value = featureTextSize;
-    textSize = featureTextSize;
-    document.getElementById('o-draw-style-textString').value = featureTextString;
-    textString = featureTextString;
-  }
-  if (featureStroke) {
-    const width = featureStroke.getWidth();
-    const lineDash = featureStroke.getLineDash();
-    const featureStrokeColor = featureStroke.getColor();
-    const colorString = `rgb(${featureStrokeColor[0]},${featureStrokeColor[1]},${featureStrokeColor[2]})`;
-    const strokeEl = document.getElementById('o-draw-style-strokeColor');
-    const strokeInputEl = strokeEl.querySelector(`input[value = "${colorString}"]`);
-    if (strokeInputEl) {
-      strokeInputEl.checked = true;
-    } else {
-      const checkedEl = document.querySelector('input[name = "strokeColorRadio"]:checked');
-      if (checkedEl) {
-        checkedEl.checked = false;
-      }
+  document.getElementById('o-draw-style-pointSizeSlider').value = swStyle.pointSize;
+  document.getElementById('o-draw-style-pointType').value = swStyle.pointType;
+  document.getElementById('o-draw-style-textSizeSlider').value = swStyle.textSize;
+  document.getElementById('o-draw-style-textString').value = swStyle.textString;
+  swStyle.strokeColor = swStyle.strokeColor.replace(/ /g, '');
+  const strokeEl = document.getElementById('o-draw-style-strokeColor');
+  const strokeInputEl = strokeEl.querySelector(`input[value = "${swStyle.strokeColor}"]`);
+  if (strokeInputEl) {
+    strokeInputEl.checked = true;
+  } else {
+    const checkedEl = document.querySelector('input[name = "strokeColorRadio"]:checked');
+    if (checkedEl) {
+      checkedEl.checked = false;
     }
-    document.getElementById('o-draw-style-strokeWidthSlider').value = width;
-    document.getElementById('o-draw-style-strokeOpacitySlider').value = featureStrokeColor[3];
-    document.getElementById('o-draw-style-strokeType').value = strokeType;
-    strokeWidth = width;
-    strokeOpacity = featureStrokeColor[3];
-    getStrokeType(lineDash);
-    setStrokeColor(colorString);
   }
-  if (featureFill) {
-    const featureFillColor = featureFill.getColor();
-    const colorString = `rgb(${featureFillColor[0]},${featureFillColor[1]},${featureFillColor[2]})`;
-    const fillEl = document.getElementById('o-draw-style-fillColor');
-    const fillInputEl = fillEl.querySelector(`input[value = "${colorString}"]`);
-    if (fillInputEl) {
-      fillInputEl.checked = true;
-    } else {
-      const checkedEl = document.querySelector('input[name = "fillColorRadio"]:checked');
-      if (checkedEl) {
-        checkedEl.checked = false;
-      }
+  document.getElementById('o-draw-style-strokeWidthSlider').value = swStyle.strokeWidth;
+  document.getElementById('o-draw-style-strokeOpacitySlider').value = swStyle.strokeOpacity;
+  document.getElementById('o-draw-style-strokeType').value = swStyle.strokeType;
+
+  const fillEl = document.getElementById('o-draw-style-fillColor');
+  swStyle.fillColor = swStyle.fillColor.replace(/ /g, '');
+  const fillInputEl = fillEl.querySelector(`input[value = "${swStyle.fillColor}"]`);
+  if (fillInputEl) {
+    fillInputEl.checked = true;
+  } else {
+    const checkedEl = document.querySelector('input[name = "fillColorRadio"]:checked');
+    if (checkedEl) {
+      checkedEl.checked = false;
     }
-    document.getElementById('o-draw-style-fillOpacitySlider').value = featureFillColor[3];
-    fillOpacity = featureFillColor[3];
-    setFillColor(colorString);
   }
+  document.getElementById('o-draw-style-fillOpacitySlider').value = swStyle.fillOpacity;
 }
 
-function getStylewindowStyle(feature) {
+function getStylewindowStyle(feature, featureStyle) {
+  const styleObj = Object.assign(swStyle, featureStyle);
   let geometryType = feature.getGeometry().getType();
   if (feature.get(annotationField)) {
     geometryType = 'TextPoint';
   }
   const style = [];
   let lineDash;
-  if (strokeType === 'dash') {
-    lineDash = [3 * strokeWidth, 3 * strokeWidth];
-  } else if (strokeType === 'dash-point') {
-    lineDash = [3 * strokeWidth, 3 * strokeWidth, 0.1, 3 * strokeWidth];
-  } else if (strokeType === 'point') {
-    lineDash = [0.1, 3 * strokeWidth];
+  if (styleObj.strokeType === 'dash') {
+    lineDash = [3 * styleObj.strokeWidth, 3 * styleObj.strokeWidth];
+  } else if (styleObj.strokeType === 'dash-point') {
+    lineDash = [3 * styleObj.strokeWidth, 3 * styleObj.strokeWidth, 0.1, 3 * styleObj.strokeWidth];
+  } else if (styleObj.strokeType === 'point') {
+    lineDash = [0.1, 3 * styleObj.strokeWidth];
   } else {
     lineDash = false;
   }
 
   const stroke = new Origo.ol.style.Stroke({
-    color: strokeColorArr,
-    width: strokeWidth,
+    color: styleObj.strokeColorArr,
+    width: styleObj.strokeWidth,
     lineDash
   });
   const fill = new Origo.ol.style.Fill({
-    color: fillColorArr
+    color: styleObj.fillColorArr
   });
-  const font = `${textSize}px ${textFont}`;
+  const font = `${styleObj.textSize}px ${styleObj.textFont}`;
   switch (geometryType) {
     case 'LineString':
     case 'MultiLineString':
@@ -271,19 +242,20 @@ function getStylewindowStyle(feature) {
       break;
     case 'Point':
     case 'MultiPoint':
-      style[0] = createRegularShape(pointType, pointSize, fill, stroke);
+      style[0] = createRegularShape(styleObj.pointType, styleObj.pointSize, fill, stroke);
       break;
     case 'TextPoint':
       style[0] = new Origo.ol.style.Style({
         text: new Origo.ol.style.Text({
-          text: textString || 'Text',
+          text: styleObj.textString || 'Text',
           font,
           fill
         })
       });
+      feature.set(annotationField, styleObj.textString || 'Text');
       break;
     default:
-      style[0] = createRegularShape(pointType, pointSize, fill, stroke);
+      style[0] = createRegularShape(styleObj.pointType, styleObj.pointSize, fill, stroke);
       break;
   }
   return style;
@@ -293,25 +265,9 @@ function styleFeature() {
   drawHandler.getSelection().forEach((feature) => {
     const style = feature.getStyle();
     style[0] = getStylewindowStyle(feature)[0];
+    feature.set('style', getStyleObject());
     feature.setStyle(style);
   });
-}
-
-function setInitialValues() {
-  const fillColorEl = document.querySelector('input[name = "fillColorRadio"]:checked');
-  fillColor = fillColorEl ? fillColorEl.value : 'rgb(0,153,255)';
-  fillOpacity = document.getElementById('o-draw-style-fillOpacitySlider').value;
-  fillColorArr = rgbToArray(fillColor, fillOpacity);
-  const strokeColorEl = document.querySelector('input[name = "strokeColorRadio"]:checked');
-  strokeColor = strokeColorEl ? strokeColorEl.value : 'rgb(0,153,255)';
-  strokeOpacity = document.getElementById('o-draw-style-strokeOpacitySlider').value;
-  strokeWidth = document.getElementById('o-draw-style-strokeWidthSlider').value;
-  strokeType = document.getElementById('o-draw-style-strokeType').value;
-  strokeColorArr = rgbToArray(strokeColor, strokeOpacity);
-  pointSize = document.getElementById('o-draw-style-pointSizeSlider').value;
-  pointType = document.getElementById('o-draw-style-pointType').value;
-  textSize = document.getElementById('o-draw-style-textSizeSlider').value;
-  textString = document.getElementById('o-draw-style-textString').value;
 }
 
 function bindUIActions() {
@@ -336,44 +292,44 @@ function bindUIActions() {
   }
 
   document.getElementById('o-draw-style-fillOpacitySlider').addEventListener('input', function e() {
-    fillOpacity = this.value;
-    setFillColor(fillColor);
+    swStyle.fillOpacity = this.value;
+    setFillColor(swStyle.fillColor);
     styleFeature();
   });
 
   document.getElementById('o-draw-style-strokeOpacitySlider').addEventListener('input', function e() {
-    strokeOpacity = this.value;
-    setStrokeColor(strokeColor);
+    swStyle.strokeOpacity = this.value;
+    setStrokeColor(swStyle.strokeColor);
     styleFeature();
   });
 
   document.getElementById('o-draw-style-strokeWidthSlider').addEventListener('input', function e() {
-    strokeWidth = this.value;
+    swStyle.strokeWidth = this.value;
     styleFeature();
   });
 
   document.getElementById('o-draw-style-strokeType').addEventListener('change', function e() {
-    strokeType = this.value;
+    swStyle.strokeType = this.value;
     styleFeature();
   });
 
   document.getElementById('o-draw-style-pointType').addEventListener('change', function e() {
-    pointType = this.value;
+    swStyle.pointType = this.value;
     styleFeature();
   });
 
   document.getElementById('o-draw-style-pointSizeSlider').addEventListener('input', function e() {
-    pointSize = this.value;
+    swStyle.pointSize = this.value;
     styleFeature();
   });
 
   document.getElementById('o-draw-style-textString').addEventListener('input', function e() {
-    textString = this.value;
+    swStyle.textString = this.value;
     styleFeature();
   });
 
   document.getElementById('o-draw-style-textSizeSlider').addEventListener('input', function e() {
-    textSize = this.value;
+    swStyle.textSize = this.value;
     styleFeature();
   });
 }
@@ -389,6 +345,7 @@ function Stylewindow(optOptions = {}) {
   } = optOptions;
 
   annotationField = optOptions.annotation || 'annotation';
+  swStyle = Object.assign(swDefaults, optOptions.swDefaults);
 
   let stylewindowEl;
   let titleEl;
@@ -434,7 +391,7 @@ function Stylewindow(optOptions = {}) {
 
       contentEl = Origo.ui.Element({
         cls: 'o-draw-stylewindow-content overflow-auto',
-        innerHTML: `${styleTemplate(palette)}`
+        innerHTML: `${styleTemplate(palette, swStyle)}`
       });
 
       this.addComponent(headerEl);
@@ -444,7 +401,6 @@ function Stylewindow(optOptions = {}) {
       document.getElementById(target).appendChild(Origo.ui.dom.html(this.render()));
       this.dispatch('render');
       bindUIActions();
-      setInitialValues();
     },
     onRender() {
       stylewindowEl = document.getElementById('o-draw-stylewindow');

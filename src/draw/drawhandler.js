@@ -121,7 +121,7 @@ function onDrawEnd(evt) {
   }
   enableDoubleClickZoom(evt);
   if (drawLayer) {
-    const featureStyle = getStylewindowStyle(evt.feature, annotationField);
+    const featureStyle = getStylewindowStyle(evt.feature);
     evt.feature.setStyle(featureStyle);
   }
 }
@@ -168,7 +168,7 @@ function onSelectAdd(e) {
   let feature;
   if (e.target) {
     feature = e.target.item(0);
-    const featureStyle = feature.getStyle();
+    const featureStyle = feature.getStyle() || Style.createStyleRule(defaultDrawStyle.draw[1]);
     featureStyle.push(selectionStyle);
     feature.setStyle(featureStyle);
     updateStylewindow(feature);
@@ -237,7 +237,11 @@ function restoreState(state) {
     source.addFeatures(state.features);
     source.getFeatures().forEach((feature) => {
       if (feature.get(annotationField)) {
-        onTextEnd(feature, feature.get(annotationField));
+        feature.set(annotationField, feature.get(annotationField));
+      }
+      if (feature.get('style')) {
+        const featureStyle = getStylewindowStyle(feature, feature.get('style'));
+        feature.setStyle(featureStyle);
       }
     });
   }
