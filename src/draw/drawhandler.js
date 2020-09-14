@@ -242,6 +242,9 @@ function restoreState(state) {
       if (feature.get('style')) {
         const featureStyle = getStylewindowStyle(feature, feature.get('style'));
         feature.setStyle(featureStyle);
+      } else {
+        const featureStyle = getStylewindowStyle(feature);
+        feature.setStyle(featureStyle);
       }
     });
   }
@@ -314,7 +317,7 @@ const init = function init(optOptions) {
 
   map = options.viewer.getMap();
 
-  annotationField = options.annotation || 'annotation';
+  annotationField = options.annotation || 'annonation';
   activeTool = undefined;
 
   $(document).on('toggleDraw', toggleDraw);
