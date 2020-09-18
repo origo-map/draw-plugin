@@ -1,10 +1,9 @@
 import Origo from 'Origo';
 import $ from 'jquery';
 import dispatcher from './drawdispatcher';
-import modal from './modal';
 import defaultDrawStyle from './drawstyle';
-import textForm from './textform';
 import shapes from './shapes';
+import { restoreStylewindow, updateStylewindow, getStylewindowStyle } from './stylewindow';
 
 let map;
 let drawSource;
@@ -14,10 +13,32 @@ let activeTool;
 let select;
 let modify;
 let annotationField;
-let promptTitle;
-let placeholderText;
-let viewerId;
 let Style;
+
+const selectionStyle = new Origo.ol.style.Style({
+  image: new Origo.ol.style.Circle({
+    radius: 6,
+    fill: new Origo.ol.style.Fill({
+      color: [200, 100, 100, 0.8]
+    })
+  }),
+  geometry(feature) {
+    let coords;
+    let pointGeometry;
+    const type = feature.getGeometry().getType();
+    if (type === 'Polygon') {
+      coords = feature.getGeometry().getCoordinates()[0];
+      pointGeometry = new Origo.ol.geom.MultiPoint(coords);
+    } else if (type === 'LineString') {
+      coords = feature.getGeometry().getCoordinates();
+      pointGeometry = new Origo.ol.geom.MultiPoint(coords);
+    } else if (type === 'Point') {
+      coords = feature.getGeometry().getCoordinates();
+      pointGeometry = new Origo.ol.geom.Point(coords);
+    }
+    return pointGeometry;
+  }
+});
 
 function disableDoubleClickZoom(evt) {
   const featureType = evt.feature.getGeometry().getType();
@@ -64,46 +85,11 @@ function onTextEnd(feature, textVal) {
   if (textVal === '') {
     drawLayer.getFeatureStore().removeFeature(feature);
   } else {
-    const text = defaultDrawStyle.text;
-    text.text.text = textVal;
-    const textStyle = Style.createStyleRule([text]);
-    feature.setStyle(textStyle);
     feature.set(annotationField, textVal);
   }
   setActive();
   activeTool = undefined;
   dispatcher.emitChangeDraw('Text', false);
-}
-
-function promptText(feature) {
-  const content = textForm.createForm({
-    value: feature.get(annotationField) || '',
-    placeHolder: placeholderText
-  });
-  modal.createModal(viewerId, {
-    title: promptTitle,
-    content
-  });
-  modal.showModal();
-  const editableText = $('#o-draw-input-text').val();
-  document.getElementById('o-draw-input-text').focus();
-  $('#o-draw-input-text').on('keyup', (e) => {
-    if (e.keyCode === 13) {
-      $('#o-draw-save-text').trigger('click');
-    }
-  });
-  $('#o-draw-save-text').on('click', (e) => {
-    const textVal = $('#o-draw-input-text').val();
-    modal.closeModal();
-    $('#o-draw-save-text').blur();
-    e.preventDefault();
-    onTextEnd(feature, textVal);
-  });
-  $('.o-modal-screen, .o-close-button').on('click', (e) => {
-    $('#o-draw-save-text').blur();
-    e.preventDefault();
-    onTextEnd(feature, editableText);
-  });
 }
 
 function addDoubleClickZoomInteraction() {
@@ -126,13 +112,18 @@ function enableDoubleClickZoom() {
 
 function onDrawEnd(evt) {
   if (activeTool === 'Text') {
-    promptText(evt.feature);
+    onTextEnd(evt.feature, 'Text');
+    document.getElementById('o-draw-stylewindow').classList.remove('hidden');
   } else {
     setActive();
     activeTool = undefined;
     dispatcher.emitChangeDraw(evt.feature.getGeometry().getType(), false);
   }
   enableDoubleClickZoom(evt);
+  if (drawLayer) {
+    const featureStyle = getStylewindowStyle(evt.feature);
+    evt.feature.setStyle(featureStyle);
+  }
 }
 
 function setDraw(tool, drawType) {
@@ -177,9 +168,19 @@ function onSelectAdd(e) {
   let feature;
   if (e.target) {
     feature = e.target.item(0);
-    if (feature.get(annotationField)) {
-      promptText(feature);
-    }
+    const featureStyle = feature.getStyle() || Style.createStyleRule(defaultDrawStyle.draw[1]);
+    featureStyle.push(selectionStyle);
+    feature.setStyle(featureStyle);
+    updateStylewindow(feature);
+  }
+}
+
+function onSelectRemove(e) {
+  restoreStylewindow();
+  const style = e.element.getStyle();
+  if (style[style.length - 1] === selectionStyle) {
+    style.pop();
+    e.element.setStyle(style);
   }
 }
 
@@ -236,7 +237,14 @@ function restoreState(state) {
     source.addFeatures(state.features);
     source.getFeatures().forEach((feature) => {
       if (feature.get(annotationField)) {
-        onTextEnd(feature, feature.get(annotationField));
+        feature.set(annotationField, feature.get(annotationField));
+      }
+      if (feature.get('style')) {
+        const featureStyle = getStylewindowStyle(feature, feature.get('style'));
+        feature.setStyle(featureStyle);
+      } else {
+        const featureStyle = getStylewindowStyle(feature);
+        feature.setStyle(featureStyle);
       }
     });
   }
@@ -261,26 +269,26 @@ function toggleDraw(e) {
 }
 
 function onEnableInteraction(e) {
-  if (e.interaction === 'draw') {
+  if (e.interaction === 'draw' && !isActive()) {
     const drawStyle = Style.createStyleRule(defaultDrawStyle.draw);
-    const selectStyle = Style.createStyleRule(defaultDrawStyle.select);
 
     if (drawLayer === undefined) {
       drawLayer = Origo.featurelayer(null, map);
       drawLayer.setStyle(drawStyle);
     }
-
     select = new Origo.ol.interaction.Select({
       layers: [drawLayer.getFeatureLayer()],
-      style: selectStyle
+      style: null,
+      hitTolerance: 5
     });
     modify = new Origo.ol.interaction.Modify({
-      features: select.getFeatures()
+      features: select.getFeatures(),
+      style: null
     });
-
     map.addInteraction(select);
     map.addInteraction(modify);
     select.getFeatures().on('add', onSelectAdd, this);
+    select.getFeatures().on('remove', onSelectRemove, this);
     setActive();
   }
 }
@@ -297,6 +305,7 @@ function runPolyFill() {
     });
   }
 }
+const getSelection = () => select.getFeatures();
 
 const getActiveTool = () => activeTool;
 
@@ -307,11 +316,8 @@ const init = function init(optOptions) {
   Style = Origo.Style;
 
   map = options.viewer.getMap();
-  viewerId = options.viewer.getMain().getId();
 
-  annotationField = options.annonation || 'annonation';
-  promptTitle = options.promptTitle || 'Ange text';
-  placeholderText = options.placeholderText || 'Text som visas i kartan';
+  annotationField = options.annotation || 'annonation';
   activeTool = undefined;
 
   $(document).on('toggleDraw', toggleDraw);
@@ -321,6 +327,7 @@ const init = function init(optOptions) {
 
 export default {
   init,
+  getSelection,
   getState,
   restoreState,
   getActiveTool

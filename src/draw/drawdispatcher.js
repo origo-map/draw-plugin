@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import drawHandler from './drawhandler';
 
 function emitToggleDraw(tool, optOptions) {
   const options = optOptions || {};
@@ -26,6 +27,7 @@ function emitEnableDrawInteraction() {
 }
 
 function emitDisableDrawInteraction() {
+  drawHandler.getSelection().clear();
   $('.o-map').first().trigger({
     type: 'enableInteraction',
     interaction: 'featureinfo'

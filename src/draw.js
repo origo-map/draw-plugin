@@ -1,11 +1,12 @@
 import Origo from 'Origo';
 import drawtoolbar from './draw/drawtoolbar';
+import { Stylewindow } from './draw/stylewindow';
 import dispatcher from './draw/drawdispatcher';
 
 const Draw = function Draw(options = {}) {
   const {
     buttonText = 'Rita',
-    drawTools
+    palette
   } = options;
 
   const icon = '#fa-pencil';
@@ -40,7 +41,9 @@ const Draw = function Draw(options = {}) {
         viewer,
         options
       });
+      const stylewindow = Stylewindow({ target: viewer.getMain().getId(), palette });
       drawtoolbar.restoreState(viewer.getUrlParams());
+      this.addComponent(stylewindow);
       this.addComponent(menuItem);
       this.render();
     },

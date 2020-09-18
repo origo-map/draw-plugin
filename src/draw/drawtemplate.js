@@ -23,6 +23,11 @@ export default `<div id="o-draw-toolbar" class="o-draw-toolbar o-toolbar o-toolb
         <use xlink:href="#ic_title_24px"></use>
       </svg>
     </button>
+    <button title="Stil" id="o-draw-style" class="icon-smaller medium round light" type="button" name="button">
+      <svg class="icon">
+        <use xlink:href="#ic_palette_24px"></use>
+      </svg>
+    </button>
     <button title="Ta bort" id="o-draw-delete" class="icon-smaller medium round light" type="button" name="button">
       <svg class="icon">
         <use xlink:href="#ic_delete_24px"></use>
