@@ -96,12 +96,18 @@ function onEnableInteraction(e) {
   const toolbarEl = document.getElementById('o-draw-toolbar');
   if (e.detail.interaction === 'draw') {
     setActive(true);
-  } else if (drawHandler.isActive() && !toolbarEl.classList.contains('o-hidden') && e.detail.interaction === 'editor'){
+  } else if (drawHandler.isActive() && !toolbarEl.classList.contains('o-hidden') && e.detail.interaction !== 'featureInfo') {
+    const stylewindowEl = document.getElementById('o-draw-stylewindow');
+    stylewindowEl.classList.add('hidden');
     toolbarEl.classList.add('o-hidden');
+    drawHandler.getSelection().clear();
     dispatcher.emitToggleDraw('cancel');
-  } else if (drawHandler.isActive() && !toolbarEl.classList.contains('o-hidden')){
+  } else if (drawHandler.isActive() && !toolbarEl.classList.contains('o-hidden')) {
+    const stylewindowEl = document.getElementById('o-draw-stylewindow');
+    stylewindowEl.classList.add('hidden');
+    drawHandler.getSelection().clear();
+    dispatcher.emitToggleDraw('cancel');
     setActive(false);
-    dispatcher.emitToggleDraw('cancel');
   }
 }
 
@@ -142,6 +148,9 @@ function init(optOptions) {
   drawHandler.init(options);
   render();
   drawExtraTools(extraTools, viewer);
+  viewer.on('toggleClickInteraction', (detail) => {
+    onEnableInteraction({detail});
+  });
   $(document).on('enableInteraction', onEnableInteraction);
   $(document).on('changeDraw', changeDrawState);
   bindUIActions();
