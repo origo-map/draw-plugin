@@ -22,7 +22,9 @@ function emitChangeDraw(tool, state) {
 function emitEnableDrawInteraction() {
   $('.o-map').first().trigger({
     type: 'enableInteraction',
-    interaction: 'draw'
+    detail: {
+      interaction: 'draw'
+    }
   });
 }
 
@@ -30,7 +32,9 @@ function emitDisableDrawInteraction() {
   drawHandler.getSelection().clear();
   $('.o-map').first().trigger({
     type: 'enableInteraction',
-    interaction: 'featureinfo'
+    detail: {
+      interaction: 'featureInfo'
+    }
   });
 }
 

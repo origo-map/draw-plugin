@@ -75,7 +75,9 @@ function bindUIActions() {
     // For Origo to be able to react properly based on new event system
     document.dispatchEvent(new CustomEvent('toggleInteraction', {
       bubbles: true,
-      detail: 'featureInfo'
+      detail: {
+        interaction: 'featureInfo'
+      }
     }));
   });
 }
@@ -91,9 +93,13 @@ function setActive(state) {
 }
 
 function onEnableInteraction(e) {
-  if (e.interaction === 'draw') {
+  const toolbarEl = document.getElementById('o-draw-toolbar');
+  if (e.detail.interaction === 'draw') {
     setActive(true);
-  } else {
+  } else if (drawHandler.isActive() && !toolbarEl.classList.contains('o-hidden') && e.detail.interaction === 'editor'){
+    toolbarEl.classList.add('o-hidden');
+    dispatcher.emitToggleDraw('cancel');
+  } else if (drawHandler.isActive() && !toolbarEl.classList.contains('o-hidden')){
     setActive(false);
     dispatcher.emitToggleDraw('cancel');
   }
