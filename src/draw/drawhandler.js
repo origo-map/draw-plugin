@@ -269,7 +269,7 @@ function toggleDraw(e) {
 }
 
 function onEnableInteraction(e) {
-  if (e.interaction === 'draw' && !isActive()) {
+  if (e.detail.interaction === 'draw' && !isActive()) {
     const drawStyle = Style.createStyleRule(defaultDrawStyle.draw);
 
     if (drawLayer === undefined) {
@@ -330,5 +330,6 @@ export default {
   getSelection,
   getState,
   restoreState,
-  getActiveTool
+  getActiveTool,
+  isActive
 };

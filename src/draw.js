@@ -28,7 +28,9 @@ const Draw = function Draw(options = {}) {
           // For Origo to be able to react properly based on new event system
           document.dispatchEvent(new CustomEvent('toggleInteraction', {
             bubbles: true,
-            detail: 'draw'
+            detail: {
+              interaction: 'draw'
+            }
           }));
           // Draw plugin's event system is based on jQuery
           dispatcher.emitEnableDrawInteraction();
