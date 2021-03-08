@@ -33,7 +33,7 @@ function emitDisableDrawInteraction() {
   $('.o-map').first().trigger({
     type: 'enableInteraction',
     detail: {
-      interaction: 'featureinfo'
+      interaction: 'featureInfo'
     }
   });
 }

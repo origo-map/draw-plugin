@@ -75,7 +75,9 @@ function bindUIActions() {
     // For Origo to be able to react properly based on new event system
     document.dispatchEvent(new CustomEvent('toggleInteraction', {
       bubbles: true,
-      detail: 'featureinfo'
+      detail: {
+        interaction: 'featureInfo'
+      }
     }));
   });
 }
