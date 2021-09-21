@@ -64,6 +64,10 @@ function onDrawStart(evt) {
   }
 }
 
+function isArrayEqual(arr1, arr2) {
+  return arr1.length === arr2.length && !arr1.some((v) => arr2.indexOf(v) < 0) && !arr2.some((v) => arr1.indexOf(v) < 0);
+}
+
 function setActive(drawType) {
   switch (drawType) {
     case 'draw':
@@ -218,6 +222,91 @@ function getState() {
     const source = drawLayer.getFeatureStore();
     const geojson = new Origo.ol.format.GeoJSON();
     const features = source.getFeatures();
+    features.forEach((feature) => {
+      if (!feature.getProperties().style) {
+        const featureStyle = feature.getStyle();
+        const valueStyle = {};
+        if (featureStyle[0].getFill() != null) {
+          valueStyle.fillColorArr = featureStyle[0].getFill().getColor();
+          valueStyle.fillColor = `rgb(${valueStyle.fillColorArr[0]},${valueStyle.fillColorArr[1]},${valueStyle.fillColorArr[2]})`;
+          valueStyle.fillOpacity = valueStyle.fillColorArr[3];
+        }
+        if (featureStyle[0].getStroke() != null) {
+          valueStyle.strokeColorArr = featureStyle[0].getStroke().getColor();
+          valueStyle.strokeColor = `rgb(${valueStyle.strokeColorArr[0]},${valueStyle.strokeColorArr[1]},${valueStyle.strokeColorArr[2]})`;
+          valueStyle.strokeOpacity = valueStyle.strokeColorArr[3];
+          valueStyle.strokeWidth = featureStyle[0].getStroke().getWidth();
+          if (typeof featureStyle[0].getStroke().getWidth() !== 'undefined') {
+            valueStyle.strokeWidth = featureStyle[0].getStroke().getWidth();
+          }
+          if (Array.isArray(featureStyle[0].getStroke().getLineDash())) {
+            if (isArrayEqual(featureStyle[0].getStroke().getLineDash(), [3 * valueStyle.strokeWidth, 3 * valueStyle.strokeWidth])) {
+              valueStyle.strokeType = 'dash';
+            } else if (isArrayEqual(featureStyle[0].getStroke().getLineDash(), [3 * valueStyle.strokeWidth, 3 * valueStyle.strokeWidth, 0.1, 3 * valueStyle.strokeWidth])) {
+              valueStyle.strokeType = 'dash-point';
+            } else if (isArrayEqual(featureStyle[0].getStroke().getLineDash(), [0.1, 3 * valueStyle.strokeWidth])) {
+              valueStyle.strokeType = 'point';
+            }
+          } else {
+            valueStyle.strokeType = 'line';
+          }
+        }
+        if (featureStyle[0].getImage() != null) {
+          valueStyle.pointSize = featureStyle[0].getImage().getRadius();
+          if (featureStyle[0].getImage().getRadius2() === 0 && featureStyle[0].getImage().getAngle() === Math.PI / 4 && featureStyle[0].getImage().getPoints() === 4) {
+            valueStyle.pointType = 'x';
+          } else if (featureStyle[0].getImage().getRadius2() === 0 && featureStyle[0].getImage().getAngle() === 0 && featureStyle[0].getImage().getPoints() === 4) {
+            valueStyle.pointType = 'cross';
+          } else if (featureStyle[0].getImage().getRadius2() === featureStyle[0].getImage().getRadius() / 2.5 && featureStyle[0].getImage().getAngle() === 0 && featureStyle[0].getImage().getPoints() === 5) {
+            valueStyle.pointType = 'star';
+          } else if (featureStyle[0].getImage().getRotation() === 0 && featureStyle[0].getImage().getAngle() === 0 && featureStyle[0].getImage().getPoints() === 3) {
+            valueStyle.pointType = 'triangle';
+          } else if (featureStyle[0].getImage().getAngle() === Math.PI / 4 && featureStyle[0].getImage().getPoints() === 4) {
+            valueStyle.pointType = 'square';
+          } else {
+            valueStyle.pointType = 'circle';
+          }
+          if (featureStyle[0].getImage().getFill() != null) {
+            valueStyle.fillColorArr = featureStyle[0].getImage().getFill().getColor();
+            valueStyle.fillColor = `rgb(${valueStyle.fillColorArr[0]},${valueStyle.fillColorArr[1]},${valueStyle.fillColorArr[2]})`;
+            valueStyle.fillOpacity = valueStyle.fillColorArr[3];
+          }
+          if (featureStyle[0].getImage().getStroke() != null) {
+            valueStyle.strokeColorArr = featureStyle[0].getImage().getStroke().getColor();
+            valueStyle.strokeColor = `rgb(${valueStyle.strokeColorArr[0]},${valueStyle.strokeColorArr[1]},${valueStyle.strokeColorArr[2]})`;
+            valueStyle.strokeOpacity = valueStyle.strokeColorArr[3];
+            valueStyle.strokeWidth = featureStyle[0].getImage().getStroke().getWidth();
+            if (typeof featureStyle[0].getImage().getStroke().getWidth() !== 'undefined') {
+              valueStyle.strokeWidth = featureStyle[0].getImage().getStroke().getWidth();
+            }
+            if (Array.isArray(featureStyle[0].getImage().getStroke().getLineDash())) {
+              if (isArrayEqual(featureStyle[0].getImage().getStroke().getLineDash(), [3 * valueStyle.strokeWidth, 3 * valueStyle.strokeWidth])) {
+                valueStyle.strokeType = 'dash';
+              } else if (isArrayEqual(featureStyle[0].getImage().getStroke().getLineDash(), [3 * valueStyle.strokeWidth, 3 * valueStyle.strokeWidth, 0.1, 3 * valueStyle.strokeWidth])) {
+                valueStyle.strokeType = 'dash-point';
+              } else if (isArrayEqual(featureStyle[0].getImage().getStroke().getLineDash(), [0.1, 3 * valueStyle.strokeWidth])) {
+                valueStyle.strokeType = 'point';
+              }
+            } else {
+              valueStyle.strokeType = 'line';
+            }
+          }
+        }
+        if (featureStyle[0].getText() != null) {
+          const fontArr = featureStyle[0].getText().getFont().split(' ');
+          valueStyle.textSize = fontArr[0].replaceAll('px', '');
+          fontArr.shift();
+          valueStyle.textFont = fontArr.join(' ');
+          valueStyle.textString = featureStyle[0].getText().getText();
+          if (featureStyle[0].getText().getFill() != null) {
+            valueStyle.fillColorArr = featureStyle[0].getText().getFill().getColor();
+            valueStyle.fillColor = `rgb(${valueStyle.fillColorArr[0]},${valueStyle.fillColorArr[1]},${valueStyle.fillColorArr[2]})`;
+            valueStyle.fillOpacity = valueStyle.fillColorArr[3];
+          }
+        }
+        feature.set('style', valueStyle);
+      }
+    });
     const json = geojson.writeFeatures(features);
     return {
       features: json
