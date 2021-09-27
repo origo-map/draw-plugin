@@ -6,6 +6,7 @@ import shapes from './shapes';
 import { restoreStylewindow, updateStylewindow, getStylewindowStyle } from './stylewindow';
 
 let map;
+let viewer;
 let drawSource;
 let drawLayer;
 let draw;
@@ -14,6 +15,8 @@ let select;
 let modify;
 let annotationField;
 let Style;
+let markerIcon;
+let touchMode;
 
 const selectionStyle = new Origo.ol.style.Style({
   image: new Origo.ol.style.Circle({
@@ -64,14 +67,29 @@ function onDrawStart(evt) {
   }
 }
 
+function showMarker() {
+  document.getElementById(`${markerIcon.getId()}`).classList.remove('hidden');
+  document.getElementById('o-draw-add-node').classList.remove('hidden');
+}
+function hideMarker() {
+  document.getElementById(`${markerIcon.getId()}`).classList.add('hidden');
+  document.getElementById('o-draw-add-node').classList.add('hidden');
+}
+
 function setActive(drawType) {
   switch (drawType) {
     case 'draw':
+      if (touchMode) {
+        showMarker();
+      }
       select.getFeatures().clear();
       modify.setActive(true);
       select.setActive(false);
       break;
     default:
+      if (touchMode) {
+        hideMarker();
+      }
       activeTool = undefined;
       map.removeInteraction(draw);
       modify.setActive(true);
@@ -137,7 +155,10 @@ function setDraw(tool, drawType) {
 
   const drawOptions = {
     source: drawSource,
-    type: geometryType
+    type: geometryType,
+    condition(evt) {
+      return evt.originalEvent.pointerType !== 'touch';
+    }
   };
 
   if (drawType) {
@@ -150,6 +171,19 @@ function setDraw(tool, drawType) {
   dispatcher.emitChangeDraw(tool, true);
   draw.on('drawend', onDrawEnd, this);
   draw.on('drawstart', onDrawStart, this);
+}
+
+function addNode() {
+  const pixel = map.getPixelFromCoordinate(map.getView().getCenter());
+  const eventObject = {
+    clientX: pixel[0],
+    clientY: pixel[1],
+    bubbles: true
+  };
+  const down = new PointerEvent('pointerdown', eventObject);
+  const up = new PointerEvent('pointerup', eventObject);
+  map.getViewport().dispatchEvent(down);
+  map.getViewport().dispatchEvent(up);
 }
 
 function onDeleteSelected() {
@@ -290,6 +324,8 @@ function onEnableInteraction(e) {
     select.getFeatures().on('add', onSelectAdd, this);
     select.getFeatures().on('remove', onSelectRemove, this);
     setActive();
+    viewer.dispatch('toggleClickInteraction', { name: 'featureinfo', active: false });
+    $('#o-draw-toolbar').removeClass('o-hidden');
   }
 }
 
@@ -317,8 +353,19 @@ const init = function init(optOptions) {
 
   map = options.viewer.getMap();
 
+  viewer = options.viewer;
   annotationField = options.annotation || 'annonation';
   activeTool = undefined;
+
+  touchMode = 'ontouchstart' in document.documentElement;
+  if (touchMode) {
+    markerIcon = Origo.ui.Icon({
+      icon: '#o_centerposition_24px',
+      cls: 'o-position-marker hidden'
+    });
+    const markerElement = Origo.ui.dom.html(markerIcon.render());
+    document.getElementById(`${viewer.getId()}`).appendChild(markerElement);
+  }
 
   $(document).on('toggleDraw', toggleDraw);
   $(document).on('editorDrawTypes', onChangeDrawType);
@@ -327,6 +374,7 @@ const init = function init(optOptions) {
 
 export default {
   init,
+  addNode,
   getSelection,
   getState,
   restoreState,

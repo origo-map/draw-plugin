@@ -1,4 +1,9 @@
 export default `<div id="o-draw-toolbar" class="o-draw-toolbar o-toolbar o-toolbar-horizontal o-padding-horizontal-8 o-rounded-top o-hidden">
+    <button title="AddNode" id="o-draw-add-node" class="hidden icon-medium medium round light box-shadow" type="button" name="button">
+      <svg class="icon">
+        <use xlink:href="#ic_add_24px"></use>
+      </svg>
+    </button>
     <button title="Punkt" id="o-draw-point" class="icon-smaller medium round light box-shadow" type="button" name="button">
       <svg class="icon">
         <use xlink:href="#ic_place_24px"></use>

@@ -10,34 +10,38 @@
   z-index: 10;
 }
 
+.o-draw-toolbar button:last-child {
+  margin-right: 0;
+}
+
 #o-draw-stylewindow {
   font-family: Arial,sans-serif;
   width: 250px;
-  position:absolute;
+  position: absolute;
   right: 1rem;
   -ms-transform: translate(0, -50%);
   -webkit-transform: translate(0, -50%);
   transform: translate(0, -50%);
-  top:50%;
+  top: 50%;
   height: calc(100% - 9rem);
 }
 
 #o-draw-stylewindow input[type="radio"] {
-  display:none;
+  display: none;
 }
 
 #o-draw-stylewindow input[type="radio"] + label span {
-  display:inline-block;
-  width:24px;
-  height:24px;
-  vertical-align:middle;
-  cursor:pointer;
-  -moz-border-radius:  50%;
-  border-radius:  50%;
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+  cursor: pointer;
+  -moz-border-radius: 50%;
+  border-radius: 50%;
   box-shadow: 0 0 0 2px white, 0 0 0 4px white;
 }
 
-#o-draw-stylewindow input[type="radio"]:checked + label span{
+#o-draw-stylewindow input[type="radio"]:checked + label span {
   box-shadow: 0 0 0 2px white, 0 0 0 4px #ababab;
 }
 
@@ -46,11 +50,18 @@
 }
 
 #o-draw-stylewindow input[type="radio"] ~ label {
-  display:inline-block;
-  vertical-align:middle;
-  padding:5px;
+  display: inline-block;
+  vertical-align: middle;
+  padding: 5px;
 }
 
 #o-draw-stylewindow ul li {
-  float:left;
+  float: left;
+}
+
+#o-draw-add-node {
+  display: block;
+  margin-right: auto;
+  margin-left: auto;
+  margin-bottom: 0.5rem;
 }
