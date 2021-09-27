@@ -5,6 +5,7 @@ import drawHandler from './drawhandler';
 import drawExtraTools from './drawtools';
 
 const activeClass = 'o-control-active';
+let $drawAddNode;
 let $drawPolygon;
 let $drawLineString;
 let $drawPoint;
@@ -18,6 +19,7 @@ let viewer;
 
 function render() {
   $(`#${target}`).append(drawTemplate);
+  $drawAddNode = $('#o-draw-add-node');
   $drawPolygon = $('#o-draw-polygon');
   $drawLineString = $('#o-draw-polyline');
   $drawPoint = $('#o-draw-point');
@@ -37,6 +39,10 @@ function bindUIActions() {
   $drawDelete.on('click', (e) => {
     dispatcher.emitToggleDraw('delete');
     $drawDelete.blur();
+    e.preventDefault();
+  });
+  $drawAddNode.on('click', (e) => {
+    drawHandler.addNode();
     e.preventDefault();
   });
   $drawPolygon.on('click', (e) => {
@@ -94,15 +100,13 @@ function setActive(state) {
 
 function onEnableInteraction(e) {
   const toolbarEl = document.getElementById('o-draw-toolbar');
-  if (e.detail.interaction === 'draw') {
-    setActive(true);
-  } else if (drawHandler.isActive() && !toolbarEl.classList.contains('o-hidden') && e.detail.interaction !== 'featureInfo') {
+  if (drawHandler.isActive() && !toolbarEl.classList.contains('o-hidden') && e.detail.interaction !== 'featureInfo' && e.detail.name !== 'featureinfo' && e.detail.interaction !== 'draw') {
     const stylewindowEl = document.getElementById('o-draw-stylewindow');
     stylewindowEl.classList.add('hidden');
     toolbarEl.classList.add('o-hidden');
     drawHandler.getSelection().clear();
     dispatcher.emitToggleDraw('cancel');
-  } else if (drawHandler.isActive() && !toolbarEl.classList.contains('o-hidden')) {
+  } else if (drawHandler.isActive() && !toolbarEl.classList.contains('o-hidden') && e.detail.interaction !== 'draw') {
     const stylewindowEl = document.getElementById('o-draw-stylewindow');
     stylewindowEl.classList.add('hidden');
     drawHandler.getSelection().clear();
@@ -149,7 +153,7 @@ function init(optOptions) {
   render();
   drawExtraTools(extraTools, viewer);
   viewer.on('toggleClickInteraction', (detail) => {
-    onEnableInteraction({detail});
+    onEnableInteraction({ detail });
   });
   $(document).on('enableInteraction', onEnableInteraction);
   $(document).on('changeDraw', changeDrawState);
