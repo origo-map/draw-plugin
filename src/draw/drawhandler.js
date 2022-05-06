@@ -83,7 +83,7 @@ function setActive(drawType) {
 function onTextEnd(feature, textVal) {
   // Remove the feature if no text is set
   if (textVal === '') {
-    drawLayer.getFeatureStore().removeFeature(feature);
+    drawLayer.getSource().removeFeature(feature);
   } else {
     feature.set(annotationField, textVal);
   }
@@ -128,7 +128,7 @@ function onDrawEnd(evt) {
 
 function setDraw(tool, drawType) {
   let geometryType = tool;
-  drawSource = drawLayer.getFeatureStore();
+  drawSource = drawLayer.getSource();
   activeTool = tool;
 
   if (activeTool === 'Text') {
@@ -156,7 +156,7 @@ function onDeleteSelected() {
   const features = select.getFeatures();
   let source;
   if (features.getLength()) {
-    source = drawLayer.getFeatureStore();
+    source = drawLayer.getSource();
     features.forEach((feature) => {
       source.removeFeature(feature);
     });
@@ -165,9 +165,8 @@ function onDeleteSelected() {
 }
 
 function onSelectAdd(e) {
-  let feature;
   if (e.target) {
-    feature = e.target.item(0);
+    const feature = e.target.item(0);
     const featureStyle = feature.getStyle() || Style.createStyleRule(defaultDrawStyle.draw[1]);
     featureStyle.push(selectionStyle);
     feature.setStyle(featureStyle);
@@ -215,7 +214,7 @@ function removeInteractions() {
 
 function getState() {
   if (drawLayer) {
-    const source = drawLayer.getFeatureStore();
+    const source = drawLayer.getSource();
     const geojson = new Origo.ol.format.GeoJSON();
     const features = source.getFeatures();
     const json = geojson.writeFeatures(features);
@@ -231,9 +230,16 @@ function restoreState(state) {
   // TODO: Sanity/data check
   if (state.features && state.features.length > 0) {
     if (drawLayer === undefined) {
-      drawLayer = Origo.featurelayer(null, map);
+      drawLayer = new Origo.ol.layer.Vector({
+        group: 'none',
+        name: 'drawplugin',
+        visible: true,
+        zIndex: 7,
+        source: new Origo.ol.source.Vector()
+      });
+      map.addLayer(drawLayer);
     }
-    const source = drawLayer.getFeatureStore();
+    const source = drawLayer.getSource();
     source.addFeatures(state.features);
     source.getFeatures().forEach((feature) => {
       if (feature.get(annotationField)) {
@@ -270,14 +276,18 @@ function toggleDraw(e) {
 
 function onEnableInteraction(e) {
   if (e.detail.interaction === 'draw' && !isActive()) {
-    const drawStyle = Style.createStyleRule(defaultDrawStyle.draw);
-
     if (drawLayer === undefined) {
-      drawLayer = Origo.featurelayer(null, map);
-      drawLayer.setStyle(drawStyle);
+      drawLayer = new Origo.ol.layer.Vector({
+        group: 'none',
+        name: 'drawplugin',
+        visible: true,
+        zIndex: 7,
+        source: new Origo.ol.source.Vector()
+      });
+      map.addLayer(drawLayer);
     }
     select = new Origo.ol.interaction.Select({
-      layers: [drawLayer.getFeatureLayer()],
+      layers: [drawLayer],
       style: null,
       hitTolerance: 5
     });
