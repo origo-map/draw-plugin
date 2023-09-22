@@ -1,6 +1,9 @@
 # Draw plugin
 
-**PLEASE NOTE THAT THIS IS A BETA VERSION**
+
+### IMPORTANT!!
+### THIS PLUGIN IS NOT REQUIRED WITH ORIGO > 2.7.0 SINCE IT IS PART OF THE CORE
+
 
 Draw tool plugin for Origo.
 
